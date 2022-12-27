@@ -30,7 +30,7 @@ def main():
     s.connect(f"{socket_path}")
 
     for line in sys.stdin.buffer:
-        s.send(line)
+        s.sendall(line)
 
 if __name__ == "__main__":
     main()
