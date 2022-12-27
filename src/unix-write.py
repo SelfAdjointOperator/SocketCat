@@ -1,11 +1,35 @@
 #!/usr/bin/env python3
 
 from typing import *
+import os
 import sys
 import socket
 import select
 import argparse
 from pathlib import Path
+
+class StdinReader:
+    def __init__(self) -> None:
+        self.stream: BinaryIO = None
+
+        if sys.stdin.buffer.isatty():
+            self.stream = sys.stdin.buffer
+            self.read = self.read_interactive
+        else:
+            # Change stdin to unbuffered BinaryIO, don't wait for "\n"
+            sys.stdin = os.fdopen(sys.stdin.fileno(), "rb", buffering = 0)
+            self.stream = sys.stdin
+            self.read = self.read_noninteractive
+
+    def read(self, count: int):
+        # set in __init__
+        raise NotImplementedError
+
+    def read_interactive(self, count: int):
+        return self.stream.readline()
+
+    def read_noninteractive(self, count: int):
+        return self.stream.read(count)
 
 def get_cli_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -22,18 +46,6 @@ def get_cli_args() -> argparse.Namespace:
 
     return args
 
-def stdin_reader_interactive(count: int):
-    return sys.stdin.readline().encode()
-
-def stdin_reader_noninteractive(count: int):
-    return sys.stdin.buffer.read(count)
-
-def get_stdin_reader() -> Callable[[int], bytes]:
-    if sys.stdin.buffer.isatty():
-        return stdin_reader_interactive
-    else:
-        return stdin_reader_noninteractive
-
 def main():
     args = get_cli_args()
 
@@ -48,7 +60,7 @@ def main():
     fd_stdin = sys.stdin.buffer.fileno()
     fd_s = s.fileno()
 
-    stdin_reader = get_stdin_reader()
+    stdin_reader = StdinReader()
 
     poller = select.poll()
     poller.register(fd_stdin, select.POLLIN)
@@ -61,7 +73,7 @@ def main():
                     print("poll(): POLLERR from stdin, exiting", file = sys.stderr)
                     raise SystemExit(1)
 
-                read = stdin_reader(4096)
+                read = stdin_reader.read(4096)
 
                 if read:
                     s.sendall(read)
