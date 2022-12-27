@@ -1,4 +1,6 @@
-# UnixSend
+# SocketCat
+
+A few simple socket tools. Currently written for `AF_UNIX`
 
 ## `unix-send.py`
 
