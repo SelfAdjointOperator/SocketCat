@@ -6,7 +6,8 @@ import sys
 import socket
 import select
 import argparse
-from pathlib import Path
+
+from .. import argparsing
 
 class StdinReader:
     def __init__(self) -> None:
@@ -33,14 +34,10 @@ class StdinReader:
 
 def get_cli_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description = "Connect to a Unix socket and read+write data with it. sends stdin to the socket and recvs the socket to stdout"
+        description = "Connect to a socket and read+write data with it. sends stdin to the socket and recvs the socket to stdout"
     )
 
-    parser.add_argument("socket_path",
-        metavar = "SOCKET-PATH",
-        help = "Path to Unix socket",
-        type = Path
-    )
+    argparsing.add_socket_address_subparsers(parser)
 
     args = parser.parse_args()
 
@@ -49,10 +46,11 @@ def get_cli_args() -> argparse.Namespace:
 def main():
     args = get_cli_args()
 
-    socket_path: Path = getattr(args, "socket_path")
+    socket_af = argparsing.af_const_from_args(args)
+    socket_address = argparsing.socket_address_from_args(args)
 
-    s = socket.socket(family = socket.AF_UNIX)
-    s.connect(f"{socket_path}")
+    s = socket.socket(family = socket_af)
+    s.connect(socket_address)
 
     eof_stdin: bool = False
     eof_s: bool = False
