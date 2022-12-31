@@ -26,6 +26,16 @@ def add_socket_address_subparsers(parser: argparse.ArgumentParser):
         type = int
     )
 
+_af_str_to_af_const = {
+    "unix": socket.AF_UNIX,
+    "inet": socket.AF_INET,
+}
+
+def af_const_from_args(args: argparse.Namespace):
+    af: str = getattr(args, "address_family")
+
+    return _af_str_to_af_const[af]
+
 def _socket_address_from_args_unix(args: argparse.Namespace):
     socket_path: Path = getattr(args, "address_family_unix_path")
 
@@ -37,20 +47,10 @@ def _socket_address_from_args_inet(args: argparse.Namespace):
 
     return (socket_ip, socket_port)
 
-_af_str_to_af_const = {
-    "unix": socket.AF_UNIX,
-    "inet": socket.AF_INET,
-}
-
 _af_str_to_af_address_generator = {
     "unix": _socket_address_from_args_unix,
     "inet": _socket_address_from_args_inet,
 }
-
-def af_const_from_args(args: argparse.Namespace):
-    af: str = getattr(args, "address_family")
-
-    return _af_str_to_af_const[af]
 
 def socket_address_from_args(args: argparse.Namespace):
     af: str = getattr(args, "address_family")
