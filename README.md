@@ -1,19 +1,19 @@
 # SocketCat
 
-A few simple socket tools. Currently written for `AF_UNIX`
+A few simple socket tools. Currently written for `AF_UNIX` and `AF_INET`
 
-## `unix-send.py`
+## `socket-send.py`
 
-Call `unix-send.py /path/to/socket` and type away to connect to the Unix socket at `/path/to/socket` and send data from stdin
+Call `socket-send.py` and type away to connect to a socket and send data from stdin
 
-## `unix-cat.py`
+## `socket-cat.py`
 
-Call `unix-cat.py /path/to/socket` to connect to the Unix socket at `/path/to/socket` and recv data from it to stdout
+Call `socket-cat.py` to connect to a socket and recv data from it to stdout
 
 Inspired by `cat(1)`
 
-## `unix-write.py`
+## `socket-write.py`
 
-Call `unix-write.py /path/to/socket` to connect to the Unix socket at `/path/to/socket` and send and recv data with it. sends stdin to the socket and recvs from the socket to stdout
+Call `socket-write.py` to connect to a socket and send and recv data with it. sends stdin to the socket and recvs from the socket to stdout
 
 Inspired by `write(1)`
