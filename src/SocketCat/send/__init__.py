@@ -28,8 +28,8 @@ def main():
     s = socket.socket(family = socket_af)
     s.connect(socket_address)
 
-    while line := os.read(sys.stdin.buffer.fileno(), 4096):
-        s.sendall(line)
+    while read := os.read(sys.stdin.buffer.fileno(), 4096):
+        s.sendall(read)
 
 if __name__ == "__main__":
     main()
