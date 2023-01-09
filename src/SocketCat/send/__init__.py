@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from typing import *
+import os
 import sys
 import socket
 import argparse
@@ -27,7 +28,7 @@ def main():
     s = socket.socket(family = socket_af)
     s.connect(socket_address)
 
-    for line in sys.stdin.buffer:
+    while line := os.read(sys.stdin.buffer.fileno(), 4096):
         s.sendall(line)
 
 if __name__ == "__main__":
