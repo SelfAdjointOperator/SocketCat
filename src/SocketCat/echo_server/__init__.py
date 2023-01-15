@@ -38,26 +38,26 @@ def main():
 
     socketserver_class = argparsing.socketserver_class_from_args(args)
 
-    try:
-        with socketserver_class(socket_address, EchoRequestHandler, bind_and_activate = False) as server:
-            if socket_af == socket.AF_UNIX and chmod is not None:
-                umask_old = os.umask(0o777)
+    with socketserver_class(socket_address, EchoRequestHandler, bind_and_activate = False) as server:
+        if socket_af == socket.AF_UNIX and chmod is not None:
+            umask_old = os.umask(0o777)
 
-            server.server_bind()
+        server.server_bind()
 
-            if socket_af == socket.AF_UNIX and chmod is not None:
-                os.umask(umask_old)
-                os.chmod(socket_address, chmod)
+        if socket_af == socket.AF_UNIX and chmod is not None:
+            os.umask(umask_old)
+            os.chmod(socket_address, chmod)
 
-            server.server_activate()
+        server.server_activate()
 
-            if fork and os.fork():
-                # parent exits
-                os._exit(0)
+        if fork and os.fork():
+            # parent exits
+            os._exit(0)
 
+        try:
             server.serve_forever()
-    except KeyboardInterrupt as e:
-        print(f"{e.__class__.__name__}: shutting down")
+        except KeyboardInterrupt as e:
+            print(f"{e.__class__.__name__}: shutting down")
 
 if __name__ == "__main__":
     main()
