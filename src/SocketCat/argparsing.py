@@ -88,7 +88,7 @@ def _socket_address_from_args_inet(args: argparse.Namespace):
 
     return (socket_ip, socket_port)
 
-_af_str_to_af_address_generator = {
+_af_str_to_address_factory = {
     "unix": _socket_address_from_args_unix,
     "inet": _socket_address_from_args_inet,
 }
@@ -96,9 +96,9 @@ _af_str_to_af_address_generator = {
 def socket_address_from_args(args: argparse.Namespace):
     af: str = getattr(args, "address_family")
 
-    return _af_str_to_af_address_generator[af](args)
+    return _af_str_to_address_factory[af](args)
 
-_af_str_fork_to_socketserver_class = {
+_af_str_to_socketserver_class = {
     "unix": common.ForkingUnixStreamServer,
     "inet": socketserver.ForkingTCPServer,
 }
@@ -106,4 +106,4 @@ _af_str_fork_to_socketserver_class = {
 def socketserver_class_from_args(args: argparse.Namespace) -> socketserver.BaseServer:
     af: str = getattr(args, "address_family")
 
-    return _af_str_fork_to_socketserver_class[af]
+    return _af_str_to_socketserver_class[af]
