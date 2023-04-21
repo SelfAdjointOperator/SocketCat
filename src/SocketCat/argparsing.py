@@ -51,6 +51,20 @@ def add_cli_args_bind(parser: argparse.ArgumentParser) -> None:
 
     add_cli_args_af(parser, add_bind_options = True)
 
+def add_cli_args_connect(parser: argparse.ArgumentParser) -> None:
+    add_cli_args_af(parser, add_bind_options = False)
+
+def add_cli_args_bind_or_connect(parser: argparse.ArgumentParser) -> None:
+    parser_bind_or_connect = parser.add_subparsers(
+        title = "connection",
+        dest = "bind_or_connect",
+        required = True,
+        description = "run a server or connect as a client"
+    )
+
+    add_cli_args_bind(parser_bind_or_connect.add_parser("bind", help = "server", subspace_name = "bind"))
+    add_cli_args_connect(parser_bind_or_connect.add_parser("connect", help = "client", subspace_name = "connect"))
+
 def af_const_from_args(args: argparse.Namespace):
     return {
         "unix": socket.AF_UNIX,
