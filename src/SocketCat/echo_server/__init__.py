@@ -1,9 +1,11 @@
+"""Simple echo server. send()s back what it recv()s"""
+
 from typing import *
 import os
 import socket
 import socketserver
-import argparse
 
+from .. import argparse32c705 as argparse
 from .. import argparsing
 
 class EchoRequestHandler(socketserver.StreamRequestHandler):
@@ -11,26 +13,16 @@ class EchoRequestHandler(socketserver.StreamRequestHandler):
         while recved := os.read(self.rfile.fileno(), 4096):
             self.wfile.write(recved)
 
-def get_cli_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description = "Simple echo server. send()s back what it recv()s"
-    )
+def add_cli_args(parser: argparse.ArgumentParser) -> None:
+    argparsing.add_cli_args_bind(parser)
 
-    argparsing.add_server_arguments(parser)
-
-    args = parser.parse_args()
-
-    return args
-
-def main():
-    args = get_cli_args()
-
+def main(args: argparse.Namespace) -> None:
     socket_af = argparsing.af_const_from_args(args)
     socket_address = argparsing.socket_address_from_args(args)
-    fork: bool = getattr(args, "fork")
+    fork: bool = args.fork
 
     if socket_af == socket.AF_UNIX:
-        chmod: Optional[int] = getattr(args, "address_family_unix_chmod")
+        chmod: Optional[int] = args.unix.chmod
         try:
             os.unlink(socket_address)
         except FileNotFoundError:
@@ -58,6 +50,3 @@ def main():
             server.serve_forever()
         except KeyboardInterrupt as e:
             print(f"{e.__class__.__name__}: shutting down")
-
-if __name__ == "__main__":
-    main()

@@ -1,109 +1,72 @@
 from typing import *
 import socket
 import socketserver
-import argparse
 from pathlib import Path
 
+from . import argparse32c705 as argparse
 from . import common
 
-def add_socket_address_subparsers(parser: argparse.ArgumentParser):
-    parser_address_family = parser.add_subparsers(title = "address", dest = "address_family", required = True,
+def add_cli_args_af(parser: argparse.ArgumentParser, add_bind_options: bool = False) -> None:
+    parser_af = parser.add_subparsers(
+        title = "address",
+        dest = "af",
+        required = True,
         description = "which address family (AF) to create the socket in"
     )
 
-    parser_address_family_unix = parser_address_family.add_parser("unix", help = "AF_UNIX")
-    parser_address_family_unix.add_argument("address_family_unix_path",
+    parser_af_unix = parser_af.add_parser("unix", help = "AF_UNIX", subspace_name = "unix")
+    parser_af_unix.add_argument("path",
         metavar = "SOCKET-PATH",
         help = "path to Unix socket",
         type = Path
     )
+    if add_bind_options:
+        parser_af_unix.add_argument("--chmod",
+            metavar = "MODE",
+            dest = "chmod",
+            help = "Call os.umask(0o777) before calling socket.bind(), restore umask, and call os.chmod(MODE) on the socket. MODE is in octal, eg --chmod 777 for a public socket",
+            type = octal
+        )
 
-    parser_address_family_inet = parser_address_family.add_parser("inet", help = "AF_INET")
-    parser_address_family_inet.add_argument("address_family_inet_ip",
+    parser_af_inet = parser_af.add_parser("inet", help = "AF_INET", subspace_name = "inet")
+    parser_af_inet.add_argument("ip",
         metavar = "IP",
         help = "IP address"
     )
-    parser_address_family_inet.add_argument("address_family_inet_port",
+    parser_af_inet.add_argument("port",
         metavar = "PORT",
         help = "port number",
         type = int
     )
 
-def octal(s: str):
+def octal(s: str) -> int:
     """Used instead of a lambda for argparse 'invalid octal value' message"""
     return int(s, 8)
 
-def add_server_arguments(parser: argparse.ArgumentParser):
+def add_cli_args_bind(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--fork", "-f",
         help = "Have the server call os.fork() after calling socket.listen()",
         action = "store_true"
     )
 
-    parser_address_family = parser.add_subparsers(title = "address", dest = "address_family", required = True,
-        description = "which address family (AF) to create the socket in"
-    )
-
-    parser_address_family_unix = parser_address_family.add_parser("unix", help = "AF_UNIX")
-    parser_address_family_unix.add_argument("address_family_unix_path",
-        metavar = "SOCKET-PATH",
-        help = "path to Unix socket",
-        type = Path
-    )
-    parser_address_family_unix.add_argument("--chmod",
-        metavar = "MODE",
-        dest = "address_family_unix_chmod",
-        help = "Call os.umask(0o777) before calling socket.bind(), restore umask, and call os.chmod(MODE) on the socket. MODE is in octal, eg --chmod 777 for a public socket",
-        type = octal
-    )
-
-    parser_address_family_inet = parser_address_family.add_parser("inet", help = "AF_INET")
-    parser_address_family_inet.add_argument("address_family_inet_ip",
-        metavar = "IP",
-        help = "IP address"
-    )
-    parser_address_family_inet.add_argument("address_family_inet_port",
-        metavar = "PORT",
-        help = "port number",
-        type = int
-    )
-
-_af_str_to_af_const = {
-    "unix": socket.AF_UNIX,
-    "inet": socket.AF_INET,
-}
+    add_cli_args_af(parser, add_bind_options = True)
 
 def af_const_from_args(args: argparse.Namespace):
-    af: str = getattr(args, "address_family")
-
-    return _af_str_to_af_const[af]
-
-def _socket_address_from_args_unix(args: argparse.Namespace):
-    socket_path: Path = getattr(args, "address_family_unix_path")
-
-    return f"{socket_path}"
-
-def _socket_address_from_args_inet(args: argparse.Namespace):
-    socket_ip: str = getattr(args, "address_family_inet_ip")
-    socket_port: int = getattr(args, "address_family_inet_port")
-
-    return (socket_ip, socket_port)
-
-_af_str_to_address_factory = {
-    "unix": _socket_address_from_args_unix,
-    "inet": _socket_address_from_args_inet,
-}
+    return {
+        "unix": socket.AF_UNIX,
+        "inet": socket.AF_INET,
+    }[args.af]
 
 def socket_address_from_args(args: argparse.Namespace):
-    af: str = getattr(args, "address_family")
-
-    return _af_str_to_address_factory[af](args)
-
-_af_str_to_socketserver_class = {
-    "unix": common.ForkingUnixStreamServer,
-    "inet": socketserver.ForkingTCPServer,
-}
+    if args.af == "unix":
+        return f"{args.unix.path}"
+    elif args.af == "inet":
+        return (args.inet.ip, args.inet.port)
+    else:
+        raise NotImplementedError
 
 def socketserver_class_from_args(args: argparse.Namespace) -> socketserver.BaseServer:
-    af: str = getattr(args, "address_family")
-
-    return _af_str_to_socketserver_class[af]
+    return {
+        "unix": common.ForkingUnixStreamServer,
+        "inet": socketserver.ForkingTCPServer,
+    }[args.af]

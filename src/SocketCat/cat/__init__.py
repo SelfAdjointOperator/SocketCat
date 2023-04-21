@@ -1,24 +1,16 @@
+"""Connect to a socket and recv data from it to stdout"""
+
 from typing import *
 import sys
 import socket
-import argparse
 
+from .. import argparse32c705 as argparse
 from .. import argparsing
 
-def get_cli_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description = "Connect to a socket and recv data from it to stdout"
-    )
+def add_cli_args(parser: argparse.ArgumentParser) -> None:
+    argparsing.add_cli_args_af(parser)
 
-    argparsing.add_socket_address_subparsers(parser)
-
-    args = parser.parse_args()
-
-    return args
-
-def main():
-    args = get_cli_args()
-
+def main(args: argparse.Namespace) -> None:
     socket_af = argparsing.af_const_from_args(args)
     socket_address = argparsing.socket_address_from_args(args)
 
@@ -27,6 +19,3 @@ def main():
 
     while recved := s.recv(4096):
         sys.stdout.buffer.write(recved)
-
-if __name__ == "__main__":
-    main()

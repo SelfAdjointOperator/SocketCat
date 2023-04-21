@@ -1,26 +1,18 @@
+"""Connect to a socket and read+write data with it. sends stdin to the socket and recvs the socket to stdout"""
+
 from typing import *
 import os
 import sys
 import socket
 import select
-import argparse
 
+from .. import argparse32c705 as argparse
 from .. import argparsing
 
-def get_cli_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description = "Connect to a socket and read+write data with it. sends stdin to the socket and recvs the socket to stdout"
-    )
+def add_cli_args(parser: argparse.ArgumentParser) -> None:
+    argparsing.add_cli_args_af(parser)
 
-    argparsing.add_socket_address_subparsers(parser)
-
-    args = parser.parse_args()
-
-    return args
-
-def main():
-    args = get_cli_args()
-
+def main(args: argparse.Namespace) -> None:
     socket_af = argparsing.af_const_from_args(args)
     socket_address = argparsing.socket_address_from_args(args)
 
@@ -66,6 +58,3 @@ def main():
                     print("recv(): 0 from socket; remote end called shutdown(SHUT_WR)", file = sys.stderr)
                     eof_s = True
                     poller.unregister(fd_s)
-
-if __name__ == "__main__":
-    main()
