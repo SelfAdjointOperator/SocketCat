@@ -6,6 +6,11 @@ import socketserver
 from . import argparse32c705 as argparse
 from . import argparsing
 
+def stream_forwarder(fd_in: int, fd_out: int, chunk_size: int = 4096) -> None:
+    "Perform chunked reads from `fd_in` until EOF and write the data to `fd_out`"
+    while read := os.read(fd_in, chunk_size):
+        os.write(fd_out, read) # TODO is write guaranteed to write all of `read`?
+
 class ForkingUnixStreamServer(socketserver.ForkingMixIn, socketserver.UnixStreamServer):
     # this should really be part of socketserver no?
     pass
