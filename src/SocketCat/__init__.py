@@ -2,7 +2,7 @@
 
 from typing import *
 
-from . import argparse32c705 as argparse
+from . import argparse32c7050 as argparse
 from . import cat
 from . import echo
 from . import send

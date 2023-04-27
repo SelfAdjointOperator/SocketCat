@@ -2,7 +2,7 @@ from typing import *
 import os
 import socket
 
-from . import argparse32c705 as argparse
+from . import argparse32c7050 as argparse
 from . import socketserverd94b3a6 as socketserver
 from . import argparsing
 

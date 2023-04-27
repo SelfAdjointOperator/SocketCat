@@ -6,7 +6,7 @@ import sys
 import socket
 import select
 
-from .. import argparse32c705 as argparse
+from .. import argparse32c7050 as argparse
 from .. import argparsing
 from .. import common
 

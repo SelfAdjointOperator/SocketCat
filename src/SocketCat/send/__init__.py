@@ -4,7 +4,7 @@ from typing import *
 import sys
 import socket
 
-from .. import argparse32c705 as argparse
+from .. import argparse32c7050 as argparse
 from .. import argparsing
 from .. import common
 
