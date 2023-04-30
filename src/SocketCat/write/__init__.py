@@ -29,7 +29,7 @@ def handler(sock: socket.socket) -> None:
                     raise SystemExit(1)
 
                 if read := os.read(sys.stdin.buffer.fileno(), 4096):
-                    os.write(fd_sock, read)
+                    common.writeall(fd_sock, read)
                 else:
                     print("read(): 0 from stdin, calling shutdown(SHUT_WR)", file = sys.stderr)
                     eof_stdin = True
@@ -44,7 +44,7 @@ def handler(sock: socket.socket) -> None:
                 recved = os.read(fd_sock, 4096)
 
                 if recved:
-                    os.write(sys.stdout.buffer.fileno(), recved)
+                    common.writeall(sys.stdout.buffer.fileno(), recved)
                 else:
                     print("recv(): 0 from socket; remote end called shutdown(SHUT_WR)", file = sys.stderr)
                     eof_sock = True
