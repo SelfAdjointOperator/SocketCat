@@ -5,6 +5,31 @@ from pathlib import Path
 from . import argparse32c7050 as argparse
 from . import socketserverd94b3a6 as socketserver
 
+def add_cli_args_af_unix(parser: argparse.ArgumentParser, add_bind_options: bool = False) -> None:
+    parser.add_argument("path",
+        metavar = "SOCKET-PATH",
+        help = "path to Unix socket",
+        type = Path
+    )
+    if add_bind_options:
+        parser.add_argument("--chmod",
+            metavar = "MODE",
+            dest = "chmod",
+            help = "Call os.umask(0o777) before calling socket.bind(), restore umask, and call os.chmod(MODE) on the socket. MODE is in octal, eg --chmod 777 for a public socket",
+            type = octal
+        )
+
+def add_cli_args_af_inet(parser: argparse.ArgumentParser, add_bind_options: bool = False) -> None:
+    parser.add_argument("ip",
+        metavar = "IP",
+        help = "IP address"
+    )
+    parser.add_argument("port",
+        metavar = "PORT",
+        help = "port number",
+        type = int
+    )
+
 def add_cli_args_af(parser: argparse.ArgumentParser, add_bind_options: bool = False) -> None:
     parser_af = parser.add_subparsers(
         title = "address",
@@ -13,29 +38,12 @@ def add_cli_args_af(parser: argparse.ArgumentParser, add_bind_options: bool = Fa
         description = "which address family (AF) to create the socket in"
     )
 
-    parser_af_unix = parser_af.add_parser("unix", help = "AF_UNIX", subspace_name = "unix")
-    parser_af_unix.add_argument("path",
-        metavar = "SOCKET-PATH",
-        help = "path to Unix socket",
-        type = Path
+    add_cli_args_af_unix(parser_af.add_parser("unix", help = "AF_UNIX", subspace_name = "unix"),
+        add_bind_options = add_bind_options
     )
-    if add_bind_options:
-        parser_af_unix.add_argument("--chmod",
-            metavar = "MODE",
-            dest = "chmod",
-            help = "Call os.umask(0o777) before calling socket.bind(), restore umask, and call os.chmod(MODE) on the socket. MODE is in octal, eg --chmod 777 for a public socket",
-            type = octal
-        )
 
-    parser_af_inet = parser_af.add_parser("inet", help = "AF_INET", subspace_name = "inet")
-    parser_af_inet.add_argument("ip",
-        metavar = "IP",
-        help = "IP address"
-    )
-    parser_af_inet.add_argument("port",
-        metavar = "PORT",
-        help = "port number",
-        type = int
+    add_cli_args_af_inet(parser_af.add_parser("inet", help = "AF_INET", subspace_name = "inet"),
+        add_bind_options = add_bind_options
     )
 
 def octal(s: str) -> int:
