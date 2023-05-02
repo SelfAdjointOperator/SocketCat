@@ -8,6 +8,13 @@ from . import echo
 from . import send
 from . import write
 
+tool_name_to_module = {
+    "cat":   cat,
+    "echo":  echo,
+    "send":  send,
+    "write": write,
+}
+
 def get_cli_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description = __doc__
@@ -19,10 +26,13 @@ def get_cli_args() -> argparse.Namespace:
         required = True
     )
 
-    cat.add_cli_args(  parser_tool.add_parser("cat",   description = cat.__doc__,   help = cat.__doc__,   subspace_name = "cat"  ))
-    echo.add_cli_args( parser_tool.add_parser("echo",  description = echo.__doc__,  help = echo.__doc__,  subspace_name = "echo" ))
-    send.add_cli_args( parser_tool.add_parser("send",  description = send.__doc__,  help = send.__doc__,  subspace_name = "send" ))
-    write.add_cli_args(parser_tool.add_parser("write", description = write.__doc__, help = write.__doc__, subspace_name = "write"))
+    for tool_name, tool_module in tool_name_to_module.items():
+        tool_module.add_cli_args(parser_tool.add_parser(
+            tool_name,
+            description = tool_module.__doc__,
+            help = tool_module.__doc__,
+            subspace_name = tool_name
+        ))
 
     args = parser.parse_args()
 
@@ -31,12 +41,7 @@ def get_cli_args() -> argparse.Namespace:
 def main() -> None:
     args = get_cli_args()
 
-    {
-        "cat": cat.main,
-        "echo": echo.main,
-        "send": send.main,
-        "write": write.main,
-    }[args.tool](getattr(args, args.tool))
+    tool_name_to_module[args.tool].main(getattr(args, args.tool))
 
 if __name__ == "__main__":
     main()
