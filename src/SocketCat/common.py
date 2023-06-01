@@ -6,17 +6,23 @@ from . import argparse32c7050 as argparse
 from . import socketserverd94b3a6 as socketserver
 from . import argparsing
 
-def writeall(fd: int, src: bytes):
+def writeall(fd: int, src: bytes) -> int:
     # this must be a do-while loop, not just a while loop
     # for correct error behaviour in the case len(src) == 0
     # man 2 write (Linux man-pages 6.04): "If count is zero and fd refers
     # to a regular file, then write() may return a failure status if
     # one of the errors below is detected"
+    n_written_total = 0
+
     n_written = os.write(fd, src)
+    n_written_total += n_written
     src = src[n_written:]
     while src:
         n_written = os.write(fd, src)
+        n_written_total += n_written
         src = src[n_written:]
+
+    return n_written_total
 
 def stream_forwarder(fd_in: int, fd_out: int, chunk_size: int = 4096) -> None:
     "Perform chunked reads from `fd_in` until EOF and write the data to `fd_out`"
