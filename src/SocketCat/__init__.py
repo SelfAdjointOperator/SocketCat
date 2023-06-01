@@ -1,7 +1,5 @@
 """Tools for connecting to sockets and `send`ing and `recv`ing with them"""
 
-from typing import *
-
 from . import argparse32c7050 as argparse
 from . import cat
 from . import echo
@@ -27,7 +25,7 @@ def get_cli_args() -> argparse.Namespace:
     )
 
     for tool_name, tool_module in tool_name_to_module.items():
-        tool_module.add_cli_args(parser_tool.add_parser(
+        tool_module.Tool.add_cli_args(parser_tool.add_parser(
             tool_name,
             description = tool_module.__doc__,
             help = tool_module.__doc__,
@@ -41,7 +39,7 @@ def get_cli_args() -> argparse.Namespace:
 def main() -> None:
     args = get_cli_args()
 
-    tool_name_to_module[args.tool].main(getattr(args, args.tool))
+    tool_name_to_module[args.tool].Tool.main(getattr(args, args.tool))
 
 if __name__ == "__main__":
     main()
