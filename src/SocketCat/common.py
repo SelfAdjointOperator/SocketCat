@@ -1,6 +1,8 @@
-from typing import Optional
+from typing import List, Optional, Tuple
 import os
+import sys
 import socket
+import struct
 
 from . import argparse32c7050 as argparse
 from . import socketserverd94b3a6 as socketserver
@@ -49,6 +51,7 @@ class Tool:
     def _main_server(cls, args: argparse.Namespace) -> None:
         class RequestHandler(socketserver.StreamRequestHandler):
             def handle(self) -> None:
+                cls.setsockopts(self.request, args.setsockopt)
                 cls.handler(self.request)
 
         socket_af = argparsing.af_const_from_args(args)
@@ -86,11 +89,41 @@ class Tool:
                 print(f"{e.__class__.__name__}: shutting down")
 
     @classmethod
+    def setsockopts(cls, sock: socket.socket, sockopts: List[Tuple[str, str, int]]):
+        for level, optname, value in sockopts:
+            level = level.upper()
+            try:
+                level_int = getattr(socket, level)
+            except AttributeError as e:
+                raise NameError(f"No socket level named {repr(level)}") from e
+
+            optname = optname.upper()
+            try:
+                optname_int = getattr(socket, optname)
+            except AttributeError as e:
+                raise NameError(f"No socket option named {repr(optname)}") from e
+
+            value_int = int(value)
+
+            if optname_int == socket.SO_LINGER:
+                if value_int < 0:
+                    value_int = struct.pack("ii", 0, 0)
+                else:
+                    value_int = struct.pack("ii", 1, value_int)
+
+            try:
+                sock.setsockopt(level_int, optname_int, value_int)
+            except Exception:
+                print(f"Error calling setsockopt with {level} {optname} {value}", file = sys.stderr)
+                raise
+
+    @classmethod
     def _main_client(cls, args: argparse.Namespace) -> None:
         socket_af = argparsing.af_const_from_args(args)
         socket_address = argparsing.socket_address_from_args(args)
 
         sock = socket.socket(family = socket_af)
+        cls.setsockopts(sock, args.setsockopt)
         sock.connect(socket_address)
 
         cls.handler(sock)

@@ -31,6 +31,14 @@ def add_cli_args_af_inet(parser: argparse.ArgumentParser, add_bind_options: bool
     )
 
 def add_cli_args_af(parser: argparse.ArgumentParser, add_bind_options: bool = False) -> None:
+    parser.add_argument("--setsockopt", "-s",
+        help = "Call setsockopt(sock, LEVEL, OPTION, VALUE) on the client socket. (Reusable)",
+        nargs = 3,
+        metavar = ("LEVEL", "OPTION", "VALUE"),
+        action = "append",
+        default = []
+    )
+
     parser_af = parser.add_subparsers(
         title = "address",
         dest = "af",
