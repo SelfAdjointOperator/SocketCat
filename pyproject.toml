@@ -1,6 +1,6 @@
 [project]
 name = "SocketCat"
-version = "1.0.0"
+dynamic = ["version"]
 description = "Tools for connecting to sockets and `send`ing and `recv`ing with them"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -10,6 +10,9 @@ Homepage = "https://github.com/jb2170/SocketCat/"
 
 [project.scripts]
 socket-cat = "SocketCat:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "SocketCat.__version__"}
 
 [build-system]
 requires = ["setuptools>=61.0"]

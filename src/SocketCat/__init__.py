@@ -1,5 +1,7 @@
 """Tools for connecting to sockets and `send`ing and `recv`ing with them"""
 
+__version__ = "1.0.1"
+
 from . import argparse32c7050 as argparse
 from . import cat
 from . import echo
